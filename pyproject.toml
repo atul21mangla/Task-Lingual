@@ -1,0 +1,7 @@
+[project]
+name = "task-lingual"
+version = "1.0.0"
+description = "Task Lingual — the natural language todo list powered by Groq LLM + Streamlit"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []

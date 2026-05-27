@@ -1,0 +1,19 @@
+# LangChain Core and Community Libraries
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-community>=0.3.0
+
+# Groq LLM integration
+langchain-groq>=0.2.0
+
+# Database ORM
+sqlalchemy>=2.0.0
+
+# Environment variables management
+python-dotenv>=1.0.0
+
+# Data validation (used by LangChain and for task structured output schema)
+pydantic>=2.0.0
+
+# Streamlit frontend
+streamlit>=1.35.0
