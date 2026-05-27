@@ -65,45 +65,67 @@ Whether you're a terminal cowboy or a dashboard dweller, your todos stay in sync
 
 ## 🏗️ Project Architecture (The Full Picture)
 
-```mermaid
-graph TB
-    subgraph "🖥️ CLI Interface"
-        CLI[main.py REPL Loop]
-    end
-
-    subgraph "🌐 Web Interface"
-        WEB[streamlit_app.py<br/>Streamlit Server]
-    end
-
-    subgraph "🧠 AI Layer"
-        AGENT[agent.py<br/>LangChain Agent]
-        LLM[Groq LLM<br/>llama3/ gpt-oss-120b]
-        TOOLS[tools.py<br/>@tool decorators]
-        MEM[InMemorySaver<br/>Conversation Memory]
-    end
-
-    subgraph "💾 Service Layer"
-        SVC[todo_service.py<br/>CRUD Functions]
-        DB_STRUCT[list_todos_structured<br/>returns List[dict]]
-    end
-
-    subgraph "🗄️ Data Layer"
-        ORM[database.py<br/>SQLAlchemy ORM]
-        DB[(todos.db<br/>SQLite)]
-    end
-
-    CLI --> AGENT
-    WEB --> SVC
-    WEB --> AGENT
-    AGENT --> LLM
-    LLM --> TOOLS
-    TOOLS --> SVC
-    AGENT --> MEM
-    SVC --> ORM
-    SVC --> DB_STRUCT
-    ORM --> DB
-    DB_STRUCT --> WEB
 ```
+ ┌─────────────────────────────────────────────────────────────────────┐
+ │                         🖥️  CLI INTERFACE                           │
+ │                     main.py (REPL Loop)                             │
+ │          "Add buy groceries for tomorrow" ──────────────────────────│────┐
+ └─────────────────────────────────────────────────────────────────────┘    │
+         │                                                                  │
+         ▼                                                                  │
+ ┌──────────────────────────────────────────────────────────────────┐       │
+ │                        🧠  AI LAYER                              │       │
+ │  ┌─────────────────┐     ┌─────────────────────────────────┐     │       │
+ │  │  agent.py       │────▶│  Groq LLM                      │     │       │
+ │  │  LangChain      │◀────│  (llama3 / gpt-oss-120b)       │     │       │
+ │  │  Agent          │     └─────────────────────────────────┘     │       │
+ │  └────────┬────────┘                                             │       │
+ │           │                                                      │       │
+ │           ▼                                                      │       │
+ │  ┌──────────────────────────────────────────────────────┐       │       │
+ │  │  tools.py                                            │       │       │
+ │  │  add_todo_tool / list_todos_tool / update_todo_tool  │       │       │
+ │  │  search_todos_by_title_tool / delete_todo_tool       │       │       │
+ │  └──────────────────┬───────────────────────────────────┘       │       │
+ │                     │                                           │       │
+ └─────────────────────│───────────────────────────────────────────┘       │
+                       ▼                                                   │
+ ┌──────────────────────────────────────────────────────────────────┐       │
+ │                      💾  SERVICE LAYER                           │       │
+ │  ┌──────────────────────────────────────────────────────┐       │       │
+ │  │  todo_service.py                                     │       │       │
+ │  │  add_todo / list_todos / update_todo / delete_todo   │       │       │
+ │  │  list_todos_structured() → List[dict]                │       │       │
+ │  └──────────────────────┬───────────────────────────────┘       │       │
+ │                         │                                       │       │
+ └─────────────────────────│───────────────────────────────────────┘       │
+                           ▼                                               │
+ ┌──────────────────────────────────────────────────────────────────┐       │
+ │                       🗄️  DATA LAYER                             │       │
+ │  ┌──────────────────────────────────────────────────────┐       │       │
+ │  │  database.py (SQLAlchemy ORM)                        │       │       │
+ │  │  ┌──────────────────────────────────────────────┐   │       │       │
+ │  │  │  todos.db (SQLite)                           │   │       │       │
+ │  │  └──────────────────────────────────────────────┘   │       │       │
+ │  └──────────────────────────────────────────────────────┘       │       │
+ └──────────────────────────────────────────────────────────────────┘       │
+                                                                           │
+ ┌────────────────────────────────────────────────────────────────────┐    │
+ │                     🌐  WEB INTERFACE                              │◀───┘
+ │  streamlit_app.py (Streamlit Server)                               │
+ │  ┌────────────────────────────────────┐  ┌──────────────────────┐  │
+ │  │  📋 Manage Todos Tab              │  │  🤖 AI Chat Tab     │  │
+ │  │  Add / Filter / Edit / Delete     │  │  Natural language    │  │
+ │  │  Inline edit forms, badges, stats │  │  via run_agent()     │  │
+ │  └────────────────────────────────────┘  └──────────────────────┘  │
+ │  "Click, type, chat — your call"                                    │
+ └─────────────────────────────────────────────────────────────────────┘
+```
+
+**Flow overview:**
+- **CLI path**: User input → `main.py` → `agent.py` → Groq LLM → `tools.py` → `todo_service.py` → SQLite
+- **Web CRUD path**: Browser → `streamlit_app.py` → `todo_service.py` → SQLite
+- **Web Chat path**: Browser → `streamlit_app.py` → `agent.py` → Groq LLM → `tools.py` → `todo_service.py` → SQLite
 
 ---
 
